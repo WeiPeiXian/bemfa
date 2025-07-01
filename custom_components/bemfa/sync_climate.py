@@ -1,11 +1,11 @@
 """Support for bemfa service."""
 from __future__ import annotations
-from typing import Any, Final
 
 import logging
 from collections.abc import Mapping, Callable
-import voluptuous as vol
+from typing import Any, Final
 
+import voluptuous as vol
 from homeassistant.components.climate import (
     ATTR_FAN_MODE,
     ATTR_FAN_MODES,
@@ -27,7 +27,6 @@ from homeassistant.components.climate import (
     HVACMode,
     DOMAIN,
 )
-
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     SERVICE_TURN_OFF,
@@ -39,6 +38,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.util.read_only_dict import ReadOnlyDict
+
 from .const import (
     MSG_OFF,
     MSG_ON,
@@ -55,8 +55,8 @@ from .const import (
     OPTIONS_SWING_BOTH_VALUE,
     TopicSuffix,
 )
-from .utils import has_key
 from .sync import SYNC_TYPES, ControllableSync
+from .utils import has_key
 
 _LOGGING = logging.getLogger(__name__)
 
@@ -109,14 +109,14 @@ DETAILS_CFG = [
 
 
 def _get_detail_value(
-    attributes: dict[str, Any], sync_config: dict[str, str], detail_cfg: Any
+        attributes: dict[str, Any], sync_config: dict[str, str], detail_cfg: Any
 ) -> str:
     if has_key(attributes, detail_cfg[ATTR_NAME]):
         for i in range(len(detail_cfg[CFG_KEYS])):
             key = detail_cfg[CFG_KEYS][i]
             if (
-                key in sync_config
-                and sync_config[key] == attributes[detail_cfg[ATTR_NAME]]
+                    key in sync_config
+                    and sync_config[key] == attributes[detail_cfg[ATTR_NAME]]
             ):
                 return detail_cfg[CFG_VALUES][i]
     return detail_cfg[CFG_VALUES][0]
@@ -125,19 +125,20 @@ def _get_detail_value(
 @SYNC_TYPES.register("climate")
 class Climate(ControllableSync):
     """Sync a hass climate entity to bemfa climate device."""
-
+    
     @staticmethod
     def get_config_step_id() -> str:
         return "sync_config_climate"
-
-    @staticmethod
-    def _get_topic_suffix() -> TopicSuffix:
+    
+    def _get_topic_suffix(self) -> TopicSuffix:
+        if self.name.endswith("地暖"):
+            return TopicSuffix.HEAT
         return TopicSuffix.CLIMATE
-
+    
     @staticmethod
     def _supported_domain() -> str:
         return DOMAIN
-
+    
     def generate_details_schema(self) -> dict[str, Any]:
         schema = super().generate_details_schema()
         state = self._hass.states.get(self._entity_id)
@@ -160,7 +161,7 @@ class Climate(ControllableSync):
                                     description={
                                         "suggested_value": self._config[_k]
                                         if _k in self._config
-                                        and self._config[_k] in options
+                                           and self._config[_k] in options
                                         else _s
                                         if _s in options
                                         else options[0]
@@ -168,9 +169,9 @@ class Climate(ControllableSync):
                                 )
                             ] = selector
         return schema
-
+    
     def _msg_generators(
-        self,
+            self,
     ) -> list[Callable[[str, ReadOnlyDict[Mapping[str, Any]]], str | int]]:
         return [
             lambda state, attributes: MSG_OFF if state == HVACMode.OFF else MSG_ON,
@@ -187,17 +188,17 @@ class Climate(ControllableSync):
                 attributes, self._config, DETAILS_CFG[1]
             ),
         ]
-
+    
     def _msg_resolvers(
-        self,
+            self,
     ) -> list[
         (
-            int,
-            int,
-            Callable[
-                [list[str | int], ReadOnlyDict[Mapping[str, Any]]],
-                (str, str, dict[str, Any]),
-            ],
+                int,
+                int,
+                Callable[
+                    [list[str | int], ReadOnlyDict[Mapping[str, Any]]],
+                    (str, str, dict[str, Any]),
+                ],
         )
     ]:
         return [

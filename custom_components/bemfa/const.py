@@ -1,8 +1,7 @@
 """Constants for the bemfa integration."""
 
-from typing import Final
-
 from enum import StrEnum
+from typing import Final
 
 DOMAIN: Final = "bemfa"
 
@@ -32,16 +31,18 @@ OPTIONS_SWING_HORIZONTAL_VALUE: Final = "swing_horizontal_value"
 OPTIONS_SWING_VERTICAL_VALUE: Final = "swing_vertical_value"
 OPTIONS_SWING_BOTH_VALUE: Final = "swing_both_value"
 
+
 # #### MQTT ####
 class TopicSuffix(StrEnum):
     """Suffix for bemfa MQTT topic"""
-
+    
     LIGHT = "002"
     FAN = "003"
     SENSOR = "004"
     CLIMATE = "005"
     SWITCH = "006"
     COVER = "009"
+    HEAT = "010"
 
 
 MQTT_HOST: Final = "bemfa.com"
